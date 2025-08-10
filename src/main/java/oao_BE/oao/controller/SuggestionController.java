@@ -24,4 +24,10 @@ public class SuggestionController {
     public ResponseEntity<?> getSuggestionList(@PathVariable Long aiProductId) {
         return suggestionService.getSuggestionList(aiProductId);
     }
+
+    // 디자이너 제안 세부 정보
+    @GetMapping("/suggestion/{designProductId}")
+    public ResponseEntity<?> getSuggestion(@PathVariable Long designProductId) {
+        return suggestionService.getSuggestion(designProductId);
+    }
 }

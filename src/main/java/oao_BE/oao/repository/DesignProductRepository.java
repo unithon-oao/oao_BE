@@ -8,4 +8,5 @@ import java.util.Optional;
 public interface DesignProductRepository extends JpaRepository<DesignProduct, Long> {
 
     Optional<DesignProduct> findByAiProduct_AiProductId(Long aiProductId);
+    Optional<DesignProduct> findByDesignProductId(Long designProductId);
 }

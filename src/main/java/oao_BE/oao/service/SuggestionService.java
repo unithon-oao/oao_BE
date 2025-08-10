@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import oao_BE.oao.domain.AIProduct;
 import oao_BE.oao.domain.DesignProduct;
+import oao_BE.oao.domain.Product;
 import oao_BE.oao.domain.User;
 import oao_BE.oao.dto.response.GetSuggestionListResponse;
 import oao_BE.oao.dto.response.GetSuggestionResponse;
@@ -54,5 +55,28 @@ public class SuggestionService {
                         .suggestion(items)
                         .build()
         );
+    }
+
+    // 디자이너 제안 세부 정보
+    public ResponseEntity<GetSuggestionResponse> getSuggestion(Long designProductId) {
+        Optional<DesignProduct> dpOpt = designProductRepository.findByDesignProductId(designProductId);
+        if (dpOpt.isEmpty()) return ResponseEntity.notFound().build();
+
+        DesignProduct dp = dpOpt.get();
+        AIProduct ap = dp.getAiProduct();
+        Product product = (ap != null) ? ap.getProduct() : null;
+
+        GetSuggestionResponse item = GetSuggestionResponse.builder()
+                .designProductId(dp.getDesignProductId())
+                .designProductImage(Collections.singletonList(dp.getDesignProductImage()))
+                .createdAt(dp.getCreatedAt())
+                .userId(dp.getUser().getUserId())
+                .aiProductId(ap != null ? ap.getAiProductId() : null)
+                .description(ap != null ? ap.getDescription() : null)
+                .price(ap != null ? ap.getRequestPrice() : null)
+                .designProductName(dp.getDesignProductName())
+                .build();
+
+        return ResponseEntity.ok(item);
     }
 }
