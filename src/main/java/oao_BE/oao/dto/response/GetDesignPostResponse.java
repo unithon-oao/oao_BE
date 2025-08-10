@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import oao_BE.oao.domain.AIProduct;
 
 import java.util.List;
 

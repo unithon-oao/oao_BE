@@ -19,8 +19,8 @@ public class DesignPostController {
     private final DesignPostService designPostService;
 
     // 게시물 목록 가져오기
-//    @GetMapping("/post/list")
-//    public ResponseEntity<?> getDesignPostList() {
-//        return designPostService.getDesignPostList();
-//    }
+    @GetMapping("/post/list")
+    public ResponseEntity<?> getDesignPostList() {
+        return designPostService.getDesignPostList();
+    }
 }

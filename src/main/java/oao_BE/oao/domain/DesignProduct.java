@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import oao_BE.oao.domain.common.BaseEntity;
 import oao_BE.oao.domain.enums.ProductStatus;
-
 import java.util.List;
 
 @Entity
@@ -22,9 +21,7 @@ public class DesignProduct extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long designProductId;
 
-    // 단일 대표 이미지(썸네일). 실제 이미지는 별도 테이블로 다중 저장
-    private String designProductImage;
-
+    private String designProductImage; // 썸네일
     private Float price;
 
     @Column(length = 2000)
@@ -48,6 +45,7 @@ public class DesignProduct extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @OneToMany(mappedBy = "designProduct", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "designProduct", fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DesignProductImage> images;
 }

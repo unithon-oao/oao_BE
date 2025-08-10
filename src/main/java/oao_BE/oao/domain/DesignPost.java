@@ -3,6 +3,8 @@ package oao_BE.oao.domain;
 import jakarta.persistence.*;
 import lombok.*;
 import oao_BE.oao.domain.common.BaseEntity;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -31,8 +33,8 @@ public class DesignPost extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user; // 게시물 작성자
 
-    // 채택된 리디자인
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "design_product_id")
-    private DesignProduct selectedDesignProduct;
+    // 게시물에 달린 리디자인들
+    @Builder.Default
+    @OneToMany(mappedBy = "designPost", fetch = FetchType.LAZY)
+    private List<DesignProduct> designProducts = new ArrayList<>();
 }
