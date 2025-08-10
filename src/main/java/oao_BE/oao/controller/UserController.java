@@ -23,7 +23,6 @@ import java.util.Optional;
 @RequestMapping("/api")
 public class UserController {
 
-    private final UserRepository userRepository;
     private final UserService userService;
 
     // 사용자 정보 가져오기
