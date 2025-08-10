@@ -2,9 +2,6 @@ package oao_BE.oao.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
-import oao_BE.oao.domain.DesignProduct;
-import oao_BE.oao.domain.Product;
-import oao_BE.oao.domain.User;
 import oao_BE.oao.domain.common.BaseEntity;
 
 import java.util.List;
@@ -16,24 +13,26 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "ai_product")
 public class AIProduct extends BaseEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long aiProductId;
 
-    private String aiProductImage;
+    // 이미지 문자열은 분리 (AIImage)
     private String prompt;
     private String description;
     private String request;
     private Float requestPrice;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @OneToMany(mappedBy = "aiProduct", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<DesignProduct> designProducts;
+    @OneToMany(mappedBy = "aiProduct", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AIImage> images;
+
+    @OneToMany(mappedBy = "aiProduct", fetch = FetchType.LAZY)
+    private List<DesignPost> designPosts;
 }
