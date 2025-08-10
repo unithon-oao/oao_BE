@@ -34,7 +34,9 @@ public class DesignPostService {
         List<GetDesignPostResponse> items = posts.stream()
                 .map(dp -> GetDesignPostResponse.builder()
                         .postId(dp.getDesignPostId())
-                        .name(Optional.ofNullable(dp.getUser()).map(User::getName).orElse(null))
+                        .description(Optional.ofNullable(dp.getAiProduct())
+                                .map(AIProduct::getDescription)
+                                .orElse(null))
                         .userId(Optional.ofNullable(dp.getUser()).map(User::getUserId).orElse(null))
                         .aiProductImage(
                                 Optional.ofNullable(dp.getAiProduct())

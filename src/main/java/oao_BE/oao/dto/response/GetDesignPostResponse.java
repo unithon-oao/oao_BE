@@ -16,7 +16,7 @@ import java.util.List;
 public class GetDesignPostResponse {
 
     private Long postId;
-    private String name;
+    private String description;
     private Long userId;
     private List<String> aiProductImage;
 }
