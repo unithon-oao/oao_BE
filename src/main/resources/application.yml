@@ -1,0 +1,23 @@
+
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: ${DEV_DB_URL:jdbc:mysql://localhost:3306/oao}
+    username: ${DEV_DB_USERNAME:root}
+    password: ${DEV_DB_PASSWORD:1234}
+
+  jpa:
+    hibernate:
+      ddl-auto: none        # 공통은 안전하게 none
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+
+ai:
+   openai:
+     url: https://api.openai.com/v1/images/generations
+     api-key: ${OPENAI_API_KEY}
