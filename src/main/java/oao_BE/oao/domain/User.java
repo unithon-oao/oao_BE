@@ -21,9 +21,12 @@ public class User {
     private String portfolio;
     private String field;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<AIProduct> aiProducts;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<DesignProduct> designProducts;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<DesignPost> designPosts;
 }
