@@ -4,16 +4,19 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import oao_BE.oao.design.dto.request.DesignRequestDTO;
 import oao_BE.oao.design.dto.response.DesignResponseDTO;
+import oao_BE.oao.design.repository.AiImageRepository;
 import oao_BE.oao.design.repository.DesignRepository;
 import oao_BE.oao.domain.AIImage;
 import oao_BE.oao.domain.AIProduct;
 import oao_BE.oao.domain.Product;
 import oao_BE.oao.domain.User;
 import oao_BE.oao.product.repository.ProductRepository;
+import oao_BE.oao.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -23,6 +26,8 @@ import java.util.List;
 public class DesignService {
     private final ProductRepository productRepository;
     private final DesignRepository designRepository;
+    private final AiImageRepository aiImageRepository;
+    private final UserRepository userRepository;
     private final OpenAIImage openAIImage;
 
     @Value("${ai.openai.api-key}")
@@ -50,9 +55,9 @@ public class DesignService {
         );
 
         // 4. DB 저장 - User 임시 생성
-        User user = User.builder()
-                .userId(1L)
-                .build();
+        User user = userRepository.findById(1L)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
 
         List<AIProduct> aiProducts = designs.stream()
                 .map(d -> {
@@ -71,15 +76,25 @@ public class DesignService {
                             .build();
 
                     // AIProduct의 images 리스트에 AIImage 추가 (양방향 관계 위해 리스트도 세팅)
-                    aiProduct.setImages(List.of(aiImage));  // setImages 메서드가 있으면 사용, 없으면 직접 필드에 접근 불가
+                    aiProduct.setImages(new ArrayList<>());
+                    aiProduct.getImages().add(aiImage);
 
                     return aiProduct;
                 })
                 .toList();
 
-
-        // 5. 응답 반환
-        return new DesignResponseDTO(designs);
+        List<AIProduct> savedProducts = designRepository.saveAll(aiProducts);
+        return DesignResponseDTO.fromEntities(savedProducts);
 
     }
+
+    @Transactional
+    public void selectDesign(Long aiImageId) {
+        AIImage aiImage = aiImageRepository.findById(aiImageId)
+                .orElseThrow(() -> new IllegalArgumentException("이미지를 찾을 수 없습니다."));
+
+        // 선택한 이미지 true
+        aiImage.setIsSelected(true);
+    }
+
 }
