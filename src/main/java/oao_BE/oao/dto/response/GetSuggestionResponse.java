@@ -20,7 +20,7 @@ public class GetSuggestionResponse {
 
     private Long designProductId;
     private List<String> designProductImage;
-    private Float price;
+    private String price;
     private String description;
     private String designProductName;
     private LocalDateTime createdAt;

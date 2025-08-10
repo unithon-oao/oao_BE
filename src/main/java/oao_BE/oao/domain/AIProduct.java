@@ -20,7 +20,7 @@ public class AIProduct extends BaseEntity {
     private String prompt;
     private String description;
     private String request;
-    private Float requestPrice;
+    private String requestPrice;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
