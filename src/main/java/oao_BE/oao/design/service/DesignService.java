@@ -5,8 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import oao_BE.oao.design.dto.request.DesignRequestDTO;
 import oao_BE.oao.design.dto.response.DesignResponseDTO;
 import oao_BE.oao.design.repository.DesignRepository;
+import oao_BE.oao.domain.AIImage;
 import oao_BE.oao.domain.AIProduct;
 import oao_BE.oao.domain.Product;
+import oao_BE.oao.domain.User;
 import oao_BE.oao.product.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -47,20 +49,34 @@ public class DesignService {
                 designRequestDTO.getPrompt(), product.getProductImage()
         );
 
-        // 4. DB 저장
-        // 임의 user 객체 생성
+        // 4. DB 저장 - User 임시 생성
+        User user = User.builder()
+                .userId(1L)
+                .build();
 
         List<AIProduct> aiProducts = designs.stream()
-                .map(d -> AIProduct.builder()
-                        .aiProductImage(d.getAiProductImage())
-                        .description(d.getDescription())
-                        .prompt(designRequestDTO.getPrompt())
-                        .product(product)
-                        .user(null) // 로그인 기능 붙이면 채우기
-                        .build()
-                ).toList();
+                .map(d -> {
+                    AIProduct aiProduct = AIProduct.builder()
+                            .description(d.getDescription())
+                            .prompt(designRequestDTO.getPrompt())
+                            .product(product)
+                            .user(user)
+                            .build();
 
-        designRepository.saveAll(aiProducts);
+                    // AIImage 생성 (이미지 URL + 선택여부 false 기본값)
+                    AIImage aiImage = AIImage.builder()
+                            .aiImage(d.getAiProductImage())  // 이미지 URL 넣기
+                            .isSelected(false)               // 기본 false
+                            .aiProduct(aiProduct)            // 양방향 설정
+                            .build();
+
+                    // AIProduct의 images 리스트에 AIImage 추가 (양방향 관계 위해 리스트도 세팅)
+                    aiProduct.setImages(List.of(aiImage));  // setImages 메서드가 있으면 사용, 없으면 직접 필드에 접근 불가
+
+                    return aiProduct;
+                })
+                .toList();
+
 
         // 5. 응답 반환
         return new DesignResponseDTO(designs);

@@ -23,8 +23,16 @@ public class DesignResponseDTO {
     // DB 에서 가져온 AIProduct 객체들을 응답 DTO 로 변환
     public static DesignResponseDTO fromEntities(List<AIProduct> products) {
         List<DesignDTO> designList = products.stream()
-                .map(p -> new DesignDTO(p.getAiProductId(), p.getAiProductImage(), p.getDescription()))
+                .map(p -> {
+                    // 대표 이미지가 없으면 빈 문자열로 처리
+                    String mainImage = p.getImages() != null && !p.getImages().isEmpty()
+                            ? p.getImages().get(0).getAiImage()
+                            : "";
+
+                    return new DesignDTO(p.getAiProductId(), mainImage, p.getDescription());
+                })
                 .toList();
         return new DesignResponseDTO(designList);
     }
+
 }
