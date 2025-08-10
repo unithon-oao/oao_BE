@@ -9,9 +9,12 @@ import oao_BE.oao.domain.User;
 import oao_BE.oao.dto.response.GetDesignPostListResponse;
 import oao_BE.oao.dto.response.GetDesignPostResponse;
 import oao_BE.oao.repository.DesignPostListRepository;
+import oao_BE.oao.repository.DesignPostRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collections;
 import java.util.List;
@@ -25,11 +28,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DesignPostService {
 
-    private final DesignPostListRepository designPostRepository;
+    private final DesignPostListRepository designPostListRepository;
+    private final DesignPostRepository designPostRepository;
 
     // 게시물 목록 가져오기
     public ResponseEntity<GetDesignPostListResponse> getDesignPostList() {
-        List<DesignPost> posts = designPostRepository.findAll();
+        List<DesignPost> posts = designPostListRepository.findAll();
 
         List<GetDesignPostResponse> items = posts.stream()
                 .map(dp -> GetDesignPostResponse.builder()
@@ -56,5 +60,24 @@ public class DesignPostService {
                         .posts(items)
                         .build()
         );
+    }
+
+    // 게시물 상세보기
+    public ResponseEntity<GetDesignPostResponse> getDesignPost(Long postId) {
+        DesignPost dp = designPostRepository.findByDesignPostId(postId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "DesignPost not found: " + postId));
+
+        AIProduct ap = dp.getAiProduct();
+
+        GetDesignPostResponse item = GetDesignPostResponse.builder()
+                .userId(Optional.ofNullable(dp.getUser()).map(User::getUserId).orElse(null))
+                .aiProductId(Optional.ofNullable(ap).map(AIProduct::getAiProductId).orElse(null))
+                .productId(Optional.ofNullable(ap).map(AIProduct::getProduct).map(p -> p.getProductId()).orElse(null))
+                .description(Optional.ofNullable(ap).map(AIProduct::getDescription).orElse(null))
+                .price(Optional.ofNullable(ap).map(AIProduct::getRequestPrice).orElse(null))
+                .request(Optional.ofNullable(ap).map(AIProduct::getRequest).orElse(null))
+                .build();
+
+        return ResponseEntity.ok(item);
     }
 }
