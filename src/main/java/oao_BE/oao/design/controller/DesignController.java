@@ -57,4 +57,10 @@ public class DesignController {
 //    ) {
 //        return ResponseEntity.ok(designService.editImageWithDrawing(aiImageId, file));
 //    }
+
+    // 최종
+    @PostMapping("/save")
+    public ResponseEntity<DesignResponseDTO> saveDesign(@RequestBody DesignRequestDTO designRequestDTO) {
+
+    }
 }

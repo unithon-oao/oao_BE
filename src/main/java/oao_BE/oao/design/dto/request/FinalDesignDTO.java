@@ -1,0 +1,12 @@
+package oao_BE.oao.design.dto.request;
+
+import lombok.Data;
+import oao_BE.oao.domain.AIImage;
+
+@Data
+public class FinalDesignDTO {
+    private String request; // 요청 메세지
+    private Float requestPrice;
+    private AIImage image; // 선택된 이미지
+
+}
