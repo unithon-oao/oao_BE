@@ -2,6 +2,7 @@ package oao_BE.oao.design.controller;
 
 import lombok.RequiredArgsConstructor;
 import oao_BE.oao.design.dto.request.DesignRequestDTO;
+import oao_BE.oao.design.dto.request.FinalDesignDTO;
 import oao_BE.oao.design.dto.response.DesignResponseDTO;
 import oao_BE.oao.design.service.DesignService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,13 @@ public class DesignController {
     @PostMapping("/generate")
     public ResponseEntity<DesignResponseDTO> generateDesign(@RequestBody DesignRequestDTO designRequestDTO) {
         DesignResponseDTO result = designService.generateDesign(designRequestDTO);
+        return ResponseEntity.ok(result);
+    }
+
+    // 선택된 ai 이미지 재생성
+    @PostMapping("/regenerate/{aiProductId}")
+    public ResponseEntity<DesignResponseDTO.DesignDTO> regenerateDesign(@PathVariable Long aiProductId, @RequestBody DesignRequestDTO designRequestDTO) {
+        DesignResponseDTO.DesignDTO result = designService.regenerateDesign(designRequestDTO, aiProductId);
         return ResponseEntity.ok(result);
     }
 
@@ -58,9 +66,12 @@ public class DesignController {
 //        return ResponseEntity.ok(designService.editImageWithDrawing(aiImageId, file));
 //    }
 
-    // 최종
+    // 최종본 저장
     @PostMapping("/save")
-    public ResponseEntity<DesignResponseDTO> saveDesign(@RequestBody DesignRequestDTO designRequestDTO) {
+    public ResponseEntity<?> saveDesign(@RequestBody FinalDesignDTO finalDesignDTO) {
+        // TODO. isSelected 검증??
 
+        designService.saveDesign(finalDesignDTO);
+        return ResponseEntity.ok("Request saved successfully");
     }
 }
