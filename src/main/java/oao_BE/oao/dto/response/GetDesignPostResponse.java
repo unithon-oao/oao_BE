@@ -24,7 +24,7 @@ public class GetDesignPostResponse {
 
     private Long aiProductId;
     private Long productId;
-    private Float price;
+    private String price;
     private String request;
 
     public static GetDesignPostResponse from(DesignPost d) {

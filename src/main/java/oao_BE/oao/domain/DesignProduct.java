@@ -22,7 +22,7 @@ public class DesignProduct extends BaseEntity {
     private Long designProductId;
 
     private String designProductImage; // 썸네일
-    private Float price;
+    private String price;
 
     @Column(length = 2000)
     private String description;
