@@ -6,6 +6,7 @@ import oao_BE.oao.domain.common.BaseEntity;
 
 @Entity
 @Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -19,7 +20,7 @@ public class AIImage extends BaseEntity {
     @JoinColumn(name = "ai_product_id", nullable = false)
     private AIProduct aiProduct;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String aiImage;
 
     @Column(nullable = false)
