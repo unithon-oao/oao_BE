@@ -68,8 +68,6 @@ public class DesignController {
     // 최종본 저장
     @PostMapping("/save")
     public ResponseEntity<?> saveDesign(@RequestBody FinalDesignDTO finalDesignDTO) {
-        // TODO. isSelected 검증??
-
         designService.saveDesign(finalDesignDTO);
         return ResponseEntity.ok("Request saved successfully");
     }
