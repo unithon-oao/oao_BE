@@ -1,6 +1,7 @@
 package oao_BE.oao.design.dto.response;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import oao_BE.oao.domain.AIProduct;
 
@@ -14,6 +15,7 @@ public class DesignResponseDTO {
 
     @Data
     @AllArgsConstructor
+    @Builder
     public static class DesignDTO {
         private Long aiProductId;
         private String aiProductImage;

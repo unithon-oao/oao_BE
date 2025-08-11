@@ -3,12 +3,17 @@ package oao_BE.oao.design.controller;
 import lombok.RequiredArgsConstructor;
 import oao_BE.oao.design.dto.request.DesignRequestDTO;
 import oao_BE.oao.design.dto.request.FinalDesignDTO;
+import oao_BE.oao.design.dto.response.AiImageDTO;
 import oao_BE.oao.design.dto.response.DesignResponseDTO;
 import oao_BE.oao.design.service.DesignService;
-import org.springframework.beans.factory.annotation.Autowired;
+import oao_BE.oao.domain.AIImage;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -38,33 +43,27 @@ public class DesignController {
         return ResponseEntity.ok().build();
     }
 
+    // 특정 디자인 선택
+    @GetMapping("/{aiProductId}")
+    public ResponseEntity<AiImageDTO> getDesign(@PathVariable Long aiProductId) {
+        AiImageDTO aiImageDTO = designService.getDesign(aiProductId);
+        return ResponseEntity.ok(aiImageDTO);
+    }
+
     // 선택된 이미지 직접 수정
     // 1. 텍스트 추가 수정
-//    @PostMapping("/{aiImageId}/edit/text")
-//    public ResponseEntity<DesignResponseDTO.DesignDTO> editImageWithText(
-//            @PathVariable Long aiImageId,
-//            @RequestBody ImageEditRequest request
-//    ) {
-//        return ResponseEntity.ok(designService.editImageWithText(aiImageId, request));
-//    }
-//
-//    // 2. 이미지 업로드 수정
-//    @PostMapping("/{aiImageId}/edit/upload")
-//    public ResponseEntity<DesignResponseDTO.DesignDTO> editImageWithUpload(
-//            @PathVariable Long aiImageId,
-//            @RequestParam("file") MultipartFile file
-//    ) {
-//        return ResponseEntity.ok(designService.editImageWithUpload(aiImageId, file));
-//    }
-//
-//    // 3. 직접 그리기 수정
-//    @PostMapping("/{aiImageId}/edit/draw")
-//    public ResponseEntity<DesignResponseDTO.DesignDTO> editImageWithDrawing(
-//            @PathVariable Long aiImageId,
-//            @RequestParam("file") MultipartFile file
-//    ) {
-//        return ResponseEntity.ok(designService.editImageWithDrawing(aiImageId, file));
-//    }
+    // 2. 이미지 업로드 수정
+    // 3. 직접 그리기 수정
+    @PostMapping("/edit/{aiProductId}")
+    @Transactional
+    public ResponseEntity<?> updateEditedImage(
+            @PathVariable Long aiProductId,
+            @RequestParam("file") MultipartFile file
+    ) throws IOException {
+
+        String updatedUrl = designService.updateEditedImage(aiProductId, file);
+        return ResponseEntity.ok(updatedUrl);
+    }
 
     // 최종본 저장
     @PostMapping("/save")

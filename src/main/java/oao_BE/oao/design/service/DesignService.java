@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import oao_BE.oao.design.dto.request.DesignRequestDTO;
 import oao_BE.oao.design.dto.request.FinalDesignDTO;
+import oao_BE.oao.design.dto.response.AiImageDTO;
 import oao_BE.oao.design.dto.response.DesignResponseDTO;
 import oao_BE.oao.design.repository.AiImageRepository;
 import oao_BE.oao.design.repository.DesignRepository;
@@ -16,10 +17,17 @@ import oao_BE.oao.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +40,8 @@ public class DesignService {
     private final UserRepository userRepository;
     private final OpenAIImage openAIImage;
     private final OpenAIDescription openAIDescription;
+    private final ImageStorageService imageStorageService;
+
 
     @Value("${ai.openai.api-key}")
     private String apiKey;
@@ -60,6 +70,13 @@ public class DesignService {
         // 4. 각 이미지에 대한 설명 생성 (OpenAI 텍스트 API 별도 호출)
         List<String> descriptions = new ArrayList<>();
         for (DesignResponseDTO.DesignDTO design : designs) {
+//            // 이미지 URL을 서버에 다운로드 및 저장
+//            String savedUrl;
+//            try {
+//                savedUrl = downloadAndSaveImage(design.getAiProductImage());
+//            } catch (IOException e) {
+//                throw new RuntimeException("이미지 저장 실패", e);
+//            }
             String promptForDescription = String.format(
                     "아래 이미지에 대한 간단하고 명확한 설명을 작성해줘.\n" +
                             "이미지 URL: %s\n" +
@@ -118,6 +135,13 @@ public class DesignService {
 
         DesignResponseDTO.DesignDTO newDesign = newDesigns.get(0);  // 1개만 생성했다고 가정
 
+//        String savedUrl;
+//        try {
+//            savedUrl = downloadAndSaveImage(newDesign.getAiProductImage());
+//        } catch (IOException e) {
+//            throw new RuntimeException("이미지 저장 실패", e);
+//        }
+
         // 3. 새 이미지 설명 생성
         String descriptionPrompt = String.format(
                 "아래 이미지에 대한 간단하고 명확한 설명을 작성해줘.\n이미지 URL: %s\n원본 프롬프트: %s",
@@ -152,6 +176,66 @@ public class DesignService {
         aiImage.setIsSelected(true);
     }
 
+    public AiImageDTO getDesign(Long aiImageId) {
+        AIImage aiImage = aiImageRepository.findById(aiImageId)
+                .orElseThrow(() -> new IllegalArgumentException("이미지를 찾을 수 없습니다."));
+        return new AiImageDTO(
+                aiImage.getAiImageId(),
+                aiImage.getAiImage(),
+                aiImage.getIsSelected(),
+                aiImage.getAiProduct().getAiProductId()
+        );
+    }
+
+    // 직접 수정
+    // 1. 텍스트
+    // 2. 이미지 업로드
+    // 3. 직접 그리기
+    public String updateEditedImage(Long aiImageId, MultipartFile editedImage) throws IOException {
+        // 1. 기존 AIImage 찾기
+        AIImage aiImage = aiImageRepository.findById(aiImageId)
+                .orElseThrow(() -> new IllegalArgumentException("AIImage를 찾을 수 없습니다."));
+
+        // 2. 파일 저장 (로컬 or S3)
+        String savePath = saveFile(editedImage, aiImageId);
+
+        // 3. DB에 새 이미지 경로 업데이트
+        aiImage.setAiImage(savePath);
+        aiImageRepository.save(aiImage);
+
+        return savePath; // 프론트에서 바로 사용할 수 있는 URL or 경로
+    }
+
+    private String getFileExtension(String filename) {
+        if (filename == null || filename.lastIndexOf('.') == -1) {
+            return "";
+        }
+        return filename.substring(filename.lastIndexOf('.') + 1);
+    }
+
+    private String saveFile(MultipartFile file, Long aiImageId) throws IOException {
+        String ext = getFileExtension(file.getOriginalFilename());
+        if (ext.isEmpty()) {
+            ext = "png";
+        }
+
+        String uniqueName = "edited_" + aiImageId + "_" + System.currentTimeMillis() + "." + ext;
+
+        Path tempDir = Paths.get(System.getProperty("user.dir"), "temp");
+        Files.createDirectories(tempDir);
+
+        Path savePath = tempDir.resolve(uniqueName);
+
+        try (var inputStream = file.getInputStream()) {
+            Files.copy(inputStream, savePath);
+        }
+
+        return "http://localhost:8080/temp/" + uniqueName;
+    }
+
+
+
+
     @Transactional
     public void saveDesign(FinalDesignDTO dto) {
         AIProduct aiProduct = designRepository.findById(dto.getAiProductId())
@@ -162,4 +246,17 @@ public class DesignService {
 
         designRepository.save(aiProduct);
     }
+
+    // 이미지 URL → 서버에 저장
+//    public String downloadAndSaveImage(String imageUrl) throws IOException {
+//        BufferedImage image = ImageIO.read(new URL(imageUrl));
+//        String ext = "png"; // 확장자 지정 또는 URL에서 추출해도 됨
+//        String uniqueName = System.currentTimeMillis() + "." + ext;
+//        Path savePath = Paths.get("temp").resolve(uniqueName);
+//        Files.createDirectories(savePath.getParent());
+//        ImageIO.write(image, ext, savePath.toFile());
+//        // 저장 후 접근 가능한 URL 리턴 (웹서버가 temp 폴더 정적 리소스 매핑 되어 있어야 함)
+//        return "http://localhost:8080/temp/" + uniqueName;
+//    }
+
 }
