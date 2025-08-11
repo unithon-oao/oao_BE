@@ -246,7 +246,7 @@ public class DesignService {
 
         ProductDetailDTO productDetailDTO = productService.productDetail(aiProduct.getProduct().getProductId());
         aiProduct.setRequest(dto.getRequest());
-        aiProduct.setRequestPrice(dto.getRequestPrice());
+        aiProduct.setRequestPrice(String.valueOf(dto.getRequestPrice()));
 
         designRepository.save(aiProduct);
         return productDetailDTO;
