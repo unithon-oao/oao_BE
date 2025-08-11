@@ -22,6 +22,8 @@ public class AIProduct extends BaseEntity {
     private String description;
     private String request;
     private Float requestPrice;
+    private String story;
+    private String aiProductName;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)

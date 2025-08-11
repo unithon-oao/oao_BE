@@ -13,5 +13,5 @@ public class ProductDetailDTO {
     private String brand;
     private String productImage;
     private ProductCategory productCategory;
-    private ProductSize productSize;
+    //private ProductSize productSize;
 }
