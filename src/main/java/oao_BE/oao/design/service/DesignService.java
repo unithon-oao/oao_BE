@@ -144,7 +144,7 @@ public class DesignService {
 
         // 3. 새 이미지 설명 생성
         String descriptionPrompt = String.format(
-                "아래 이미지에 대한 간단하고 명확한 설명을 작성해줘.\n이미지 URL: %s\n원본 프롬프트: %s",
+                "아래 이미지에 대한 간단하고 명확한 설명을 한 문장으로 작성해줘.\n이미지 URL: %s\n원본 프롬프트: %s",
                 newDesign.getAiProductImage(), designRequestDTO.getPrompt()
         );
         String newDescription = openAIDescription.generateDescription(descriptionPrompt);
