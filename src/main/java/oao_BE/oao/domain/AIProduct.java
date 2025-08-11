@@ -21,6 +21,8 @@ public class AIProduct extends BaseEntity {
     private String prompt;
     private String description;
     private String request;
+    private String story;
+    private String aiProductName;
     private String requestPrice;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -7,6 +7,7 @@ import oao_BE.oao.design.dto.response.AiImageDTO;
 import oao_BE.oao.design.dto.response.DesignResponseDTO;
 import oao_BE.oao.design.service.DesignService;
 import oao_BE.oao.domain.AIImage;
+import oao_BE.oao.product.dto.ProductDetailDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -68,7 +69,7 @@ public class DesignController {
     // 최종본 저장
     @PostMapping("/save")
     public ResponseEntity<?> saveDesign(@RequestBody FinalDesignDTO finalDesignDTO) {
-        designService.saveDesign(finalDesignDTO);
-        return ResponseEntity.ok("Request saved successfully");
+        ProductDetailDTO productDetailDTO = designService.saveDesign(finalDesignDTO);
+        return ResponseEntity.ok(productDetailDTO);
     }
 }

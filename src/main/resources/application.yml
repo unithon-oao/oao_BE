@@ -10,7 +10,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: none        # 공통은 안전하게 none
+      ddl-auto: update        # 공통은 안전하게 none
     show-sql: false
     properties:
       hibernate:

@@ -32,7 +32,7 @@ public class ProductService {
             map.put("brand", product.getBrand());
             map.put("productImage", product.getProductImage());
             map.put("productCategory", product.getProductCategory().toString());
-            map.put("productSize", product.getProductSize().toString());
+            //map.put("productSize", product.getProductSize().toString());
 
 
             result.add(map);
@@ -48,8 +48,8 @@ public class ProductService {
                 product.getProductName(),
                 product.getBrand(),
                 product.getProductImage(),
-                product.getProductCategory(),
-                product.getProductSize()
+                product.getProductCategory()
+               // product.getProductSize()
         );
     }
 }

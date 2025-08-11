@@ -8,5 +8,7 @@ public class FinalDesignDTO {
     private String request; // 요청 메세지
     private Float requestPrice;
     private Long aiProductId; // 선택된 이미지
+    private String story;
+    private String aiProductName;
 
 }

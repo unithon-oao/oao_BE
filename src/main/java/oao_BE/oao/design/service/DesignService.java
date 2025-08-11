@@ -12,7 +12,9 @@ import oao_BE.oao.domain.AIImage;
 import oao_BE.oao.domain.AIProduct;
 import oao_BE.oao.domain.Product;
 import oao_BE.oao.domain.User;
+import oao_BE.oao.product.dto.ProductDetailDTO;
 import oao_BE.oao.product.repository.ProductRepository;
+import oao_BE.oao.product.service.ProductService;
 import oao_BE.oao.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -38,6 +40,7 @@ public class DesignService {
     private final DesignRepository designRepository;
     private final AiImageRepository aiImageRepository;
     private final UserRepository userRepository;
+    private final ProductService productService;
     private final OpenAIImage openAIImage;
     private final OpenAIDescription openAIDescription;
     private final ImageStorageService imageStorageService;
@@ -237,14 +240,16 @@ public class DesignService {
 
 
     @Transactional
-    public void saveDesign(FinalDesignDTO dto) {
+    public ProductDetailDTO saveDesign(FinalDesignDTO dto) {
         AIProduct aiProduct = designRepository.findById(dto.getAiProductId())
                 .orElseThrow(() -> new RuntimeException("AIProduct not found"));
 
+        ProductDetailDTO productDetailDTO = productService.productDetail(aiProduct.getProduct().getProductId());
         aiProduct.setRequest(dto.getRequest());
         aiProduct.setRequestPrice(dto.getRequestPrice());
 
         designRepository.save(aiProduct);
+        return productDetailDTO;
     }
 
     // 이미지 URL → 서버에 저장
