@@ -17,7 +17,7 @@ public class S3Service {
 
     private final AmazonS3 s3Client;
     private final RestTemplate restTemplate;
-    private final String bucketName = "your-s3-bucket-name";
+    private final String bucketName = "oao-media";
 
     public String saveImageFromUrl(String dallEImageUrl) {
         // 1. DALL-E 이미지 다운로드
