@@ -22,7 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -43,7 +45,6 @@ public class DesignService {
     private final ProductService productService;
     private final OpenAIImage openAIImage;
     private final OpenAIDescription openAIDescription;
-    private final ImageStorageService imageStorageService;
 
 
     @Value("${ai.openai.api-key}")
@@ -52,8 +53,10 @@ public class DesignService {
     @Value("${ai.openai.url}")
     private String openAiUrl;
 
+
+    // GPT-4o Vision API와 DALL-E 3 API를 사용한 이미지 생성
     @Transactional
-    public DesignResponseDTO generateDesign(DesignRequestDTO designRequestDTO) {
+    public DesignResponseDTO generateDesign(DesignRequestDTO designRequestDTO) throws IOException {
         // 1. 캐시(DB) 확인
         List<AIProduct> cached = designRepository
                 .findByPromptAndProduct_ProductId(designRequestDTO.getPrompt(), designRequestDTO.getProductId());
@@ -65,35 +68,30 @@ public class DesignService {
         Product product = productRepository.findById(designRequestDTO.getProductId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상품입니다."));
 
-        // 3. OpenAI 이미지 생성
-        List<DesignResponseDTO.DesignDTO> designs = openAIImage.generateImages(
-                designRequestDTO.getPrompt(), product.getProductImage()
+        // 3. GPT-4o Vision API 호출로 이미지 설명 얻기
+        String imageDescription = openAIImage.describeImageWithVision(product.getProductImage());
+
+        // 4. DALL-E 3 이미지 생성 API 호출
+        List<DesignResponseDTO.DesignDTO> designs = openAIImage.generateImagesWithDescription(
+                imageDescription,
+                designRequestDTO.getPrompt()
         );
 
-        // 4. 각 이미지에 대한 설명 생성 (OpenAI 텍스트 API 별도 호출)
-        List<String> descriptions = new ArrayList<>();
+        // 5. 각 이미지에 대한 설명 생성 (OpenAI 텍스트 API 별도 호출)
         for (DesignResponseDTO.DesignDTO design : designs) {
-//            // 이미지 URL을 서버에 다운로드 및 저장
-//            String savedUrl;
-//            try {
-//                savedUrl = downloadAndSaveImage(design.getAiProductImage());
-//            } catch (IOException e) {
-//                throw new RuntimeException("이미지 저장 실패", e);
-//            }
             String promptForDescription = String.format(
-                    "아래 이미지에 대한 간단하고 명확한 설명을 작성해줘.\n" +
+                    "아래 이미지에 대한 간단하고 명확한 설명을 한 문장으로 작성해줘.\n" +
                             "이미지 URL: %s\n" +
                             "원본 프롬프트: %s",
                     design.getAiProductImage(), designRequestDTO.getPrompt()
             );
             String description = openAIDescription.generateDescription(promptForDescription);
-            design.setDescription(description);  // DTO의 description 필드 직접 수정
+            design.setDescription(description);
         }
 
-        // 5. DB 저장 - User 임시 생성
+        // 6. DB 저장
         User user = userRepository.findById(1L)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
-
 
         List<AIProduct> aiProducts = designs.stream()
                 .map(d -> {
@@ -104,14 +102,12 @@ public class DesignService {
                             .user(user)
                             .build();
 
-                    // AIImage 생성 (이미지 URL + 선택여부 false 기본값)
                     AIImage aiImage = AIImage.builder()
-                            .aiImage(d.getAiProductImage())  // 이미지 URL 넣기
-                            .isSelected(false)               // 기본 false
-                            .aiProduct(aiProduct)            // 양방향 설정
+                            .aiImage(d.getAiProductImage())
+                            .isSelected(false)
+                            .aiProduct(aiProduct)
                             .build();
 
-                    // AIProduct의 images 리스트에 AIImage 추가 (양방향 관계 위해 리스트도 세팅)
                     aiProduct.setImages(new ArrayList<>());
                     aiProduct.getImages().add(aiImage);
 
@@ -121,8 +117,26 @@ public class DesignService {
 
         List<AIProduct> savedProducts = designRepository.saveAll(aiProducts);
         return DesignResponseDTO.fromEntities(savedProducts);
-
     }
+
+
+    // 뒷면 생성
+    @Transactional
+    public DesignResponseDTO.DesignDTO generateBack(Long aiProductId) throws IOException {
+        String frontImageUrl = getDesign(aiProductId).getAiImage();
+
+        // 1. GPT-4o Vision API 호출로 앞면 이미지의 특징 분석
+        String frontImageDescription = openAIImage.describeImageWithVision(frontImageUrl);
+
+        // 2. DALL-E 3 이미지 생성 API 호출 (뒷면 디자인)
+        DesignResponseDTO.DesignDTO backDesign = openAIImage.generateBackDesignWithDalle3(
+                frontImageDescription
+        );
+
+        return backDesign;
+    }
+
+    //
 
     public DesignResponseDTO.DesignDTO regenerateDesign(DesignRequestDTO designRequestDTO, Long aiProductId) {
         // 1. 기존 AIProduct 조회
@@ -239,6 +253,7 @@ public class DesignService {
 
 
 
+    // 초안 저장
     @Transactional
     public ProductDetailDTO saveDesign(FinalDesignDTO dto) {
         AIProduct aiProduct = designRepository.findById(dto.getAiProductId())
@@ -247,21 +262,12 @@ public class DesignService {
         ProductDetailDTO productDetailDTO = productService.productDetail(aiProduct.getProduct().getProductId());
         aiProduct.setRequest(dto.getRequest());
         aiProduct.setRequestPrice(String.valueOf(dto.getRequestPrice()));
+        aiProduct.setStory(dto.getStory());
+        aiProduct.setAiProductName(dto.getAiProductName());
 
         designRepository.save(aiProduct);
         return productDetailDTO;
     }
 
-    // 이미지 URL → 서버에 저장
-//    public String downloadAndSaveImage(String imageUrl) throws IOException {
-//        BufferedImage image = ImageIO.read(new URL(imageUrl));
-//        String ext = "png"; // 확장자 지정 또는 URL에서 추출해도 됨
-//        String uniqueName = System.currentTimeMillis() + "." + ext;
-//        Path savePath = Paths.get("temp").resolve(uniqueName);
-//        Files.createDirectories(savePath.getParent());
-//        ImageIO.write(image, ext, savePath.toFile());
-//        // 저장 후 접근 가능한 URL 리턴 (웹서버가 temp 폴더 정적 리소스 매핑 되어 있어야 함)
-//        return "http://localhost:8080/temp/" + uniqueName;
-//    }
 
 }

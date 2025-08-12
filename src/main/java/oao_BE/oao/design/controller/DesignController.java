@@ -6,7 +6,6 @@ import oao_BE.oao.design.dto.request.FinalDesignDTO;
 import oao_BE.oao.design.dto.response.AiImageDTO;
 import oao_BE.oao.design.dto.response.DesignResponseDTO;
 import oao_BE.oao.design.service.DesignService;
-import oao_BE.oao.domain.AIImage;
 import oao_BE.oao.product.dto.ProductDetailDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -25,9 +25,21 @@ public class DesignController {
 
     // ai 이미지 생성
     @PostMapping("/generate")
-    public ResponseEntity<DesignResponseDTO> generateDesign(@RequestBody DesignRequestDTO designRequestDTO) {
+    public ResponseEntity<DesignResponseDTO> generateDesign(@RequestBody DesignRequestDTO designRequestDTO) throws IOException {
         DesignResponseDTO result = designService.generateDesign(designRequestDTO);
         return ResponseEntity.ok(result);
+    }
+
+    // ai 이미지 뒷면 생성
+    @PostMapping("/generateBack")
+    public ResponseEntity<Map<String, Object>> generateBack(@RequestBody Map<String, Long> request) throws IOException {
+        Long aiProductId = request.get("aiProductId");
+        DesignResponseDTO.DesignDTO result = designService.generateBack(aiProductId);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("aiImageBackURL", result.getAiProductImage());
+        response.put("aiProductId",aiProductId);
+        return ResponseEntity.ok(response);
     }
 
     // 선택된 ai 이미지 재생성
@@ -51,10 +63,9 @@ public class DesignController {
         return ResponseEntity.ok(aiImageDTO);
     }
 
+    // TODO.
     // 선택된 이미지 직접 수정
-    // 1. 텍스트 추가 수정
-    // 2. 이미지 업로드 수정
-    // 3. 직접 그리기 수정
+    // 1. 텍스트 추가 수정 2. 이미지 업로드 수정 3. 직접 그리기 수정
     @PostMapping("/edit/{aiProductId}")
     @Transactional
     public ResponseEntity<?> updateEditedImage(
