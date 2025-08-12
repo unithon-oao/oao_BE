@@ -17,6 +17,7 @@ import java.util.Map;
 public class OpenAIImage {
 
     private final RestTemplate restTemplate;
+    private final S3Service s3Service;
 
     @Value("${ai.openai.api-key}")
     private String apiKey;
@@ -144,7 +145,8 @@ public class OpenAIImage {
                     "model", "dall-e-3",
                     "prompt", finalPrompt,
                     "n", 1, // DALL-E 3는 한 번에 1개만 생성 가능
-                    "size", "1024x1024"
+                    "size", "1024x1024",
+                    "response_format","b64_json" // URL 대신 Base64 데이터로 응답
             );
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
@@ -163,13 +165,14 @@ public class OpenAIImage {
 
                 List<Map<String, String>> dataList = (List<Map<String, String>>) response.getBody().get("data");
 
-                // 응답으로 받은 이미지 URL을 results 리스트에 추가합니다.
                 dataList.forEach(data -> {
-                    String imageUrl = data.get("url");
-                    results.add(new DesignResponseDTO.DesignDTO(null, imageUrl, "AI generated design"));
+                    String base64Image = data.get("b64_json");
+                    // Base64 데이터를 S3에 업로드하고 S3 URL을 반환받음
+                    String s3Url = s3Service.saveImageFromBase64(base64Image);
+                    results.add(new DesignResponseDTO.DesignDTO(null, s3Url, "AI generated design"));
                 });
             } catch (Exception e) {
-                // API 호출 실패 시 로그를 남기고 다음 반복으로 넘어갈 수 있도록 처리
+                // API 호출 실패 시 로그를 남기고 다음 반복으로 넘어감
             }
         }
 
