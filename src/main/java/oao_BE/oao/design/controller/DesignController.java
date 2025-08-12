@@ -7,6 +7,7 @@ import oao_BE.oao.design.dto.response.AiImageDTO;
 import oao_BE.oao.design.dto.response.DesignResponseDTO;
 import oao_BE.oao.design.service.DesignService;
 import oao_BE.oao.product.dto.ProductDetailDTO;
+import oao_BE.oao.product.dto.ProductWithPostIdDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -63,24 +64,11 @@ public class DesignController {
         return ResponseEntity.ok(aiImageDTO);
     }
 
-    // TODO.
-    // 선택된 이미지 직접 수정
-    // 1. 텍스트 추가 수정 2. 이미지 업로드 수정 3. 직접 그리기 수정
-    @PostMapping("/edit/{aiProductId}")
-    @Transactional
-    public ResponseEntity<?> updateEditedImage(
-            @PathVariable Long aiProductId,
-            @RequestParam("file") MultipartFile file
-    ) throws IOException {
-
-        String updatedUrl = designService.updateEditedImage(aiProductId, file);
-        return ResponseEntity.ok(updatedUrl);
-    }
 
     // 최종본 저장
     @PostMapping("/save")
     public ResponseEntity<?> saveDesign(@RequestBody FinalDesignDTO finalDesignDTO) {
-        ProductDetailDTO productDetailDTO = designService.saveDesign(finalDesignDTO);
-        return ResponseEntity.ok(productDetailDTO);
+        ProductWithPostIdDTO productWithPostIdDTO = designService.saveDesign(finalDesignDTO);
+        return ResponseEntity.ok(productWithPostIdDTO);
     }
 }
