@@ -204,7 +204,8 @@ public class OpenAIImage {
                 "model", "dall-e-3",
                 "prompt", finalPrompt,
                 "n", 1,
-                "size", "1024x1024"
+                "size", "1024x1024",
+                "response_format","b64_json"
         );
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
@@ -222,9 +223,11 @@ public class OpenAIImage {
             }
 
             List<Map<String, String>> dataList = (List<Map<String, String>>) response.getBody().get("data");
-            String imageUrl = dataList.get(0).get("url");
+            String base64Image = dataList.get(0).get("b64_json"); // b64_json으로 받음
 
-            return new DesignResponseDTO.DesignDTO(null, imageUrl, "AI generated back design");
+            String s3Url = s3Service.saveImageFromBase64(base64Image); // Base64 처리 메서드 호출
+
+            return new DesignResponseDTO.DesignDTO(null, s3Url, "AI generated back design");
         } catch (Exception e) {
             throw new RuntimeException("뒷면 디자인 생성 실패", e);
         }
