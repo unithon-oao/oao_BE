@@ -8,6 +8,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.Base64;
 import java.util.UUID;
 
 @Service
@@ -35,6 +36,24 @@ public class S3Service {
         }
 
         // 3. S3 URL 반환
+        return s3Client.getUrl(bucketName, fileName).toString();
+    }
+
+    // Base64 문자열을 S3에 업로드하는 새로운 메서드
+    public String saveImageFromBase64(String base64String) {
+        byte[] imageBytes = Base64.getDecoder().decode(base64String);
+
+        String fileName = "designs/" + UUID.randomUUID() + ".png";
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(imageBytes.length);
+        metadata.setContentType("image/png");
+
+        try (InputStream inputStream = new ByteArrayInputStream(imageBytes)) {
+            s3Client.putObject(bucketName, fileName, inputStream, metadata);
+        } catch (Exception e) {
+            throw new RuntimeException("S3 이미지 업로드 실패", e);
+        }
+
         return s3Client.getUrl(bucketName, fileName).toString();
     }
 }
