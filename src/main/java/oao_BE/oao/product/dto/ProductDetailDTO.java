@@ -11,7 +11,7 @@ public class ProductDetailDTO {
     private Long productId;
     private String productName;
     private String brand;
-    private String productImage;
+    private String imageUrl;
     private ProductCategory productCategory;
     //private ProductSize productSize;
 }
