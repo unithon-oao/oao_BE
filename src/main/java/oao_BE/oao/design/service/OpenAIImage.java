@@ -83,7 +83,10 @@ public class OpenAIImage {
                         Map.of(
                                 "role", "user",
                                 "content", List.of(
-                                        Map.of("type", "text", "text", "Describe the main product in this image in detail. Focus on the product's type, color, shape, and overall texture. Also, describe the background and the lighting of the image. The description should be objective and concise, without adding any creative or subjective elements."),
+                                        Map.of("type", "text", "text", "You are a professional product photographer. " +
+                                                "Describe the main product in this image in a single, concise paragraph. " +
+                                                "Focus on the product's type, color, material, texture, and wrinkles. Also, describe the camera angle, the lighting style (e.g., studio, natural), and the background. " +
+                                                "The description should be highly objective and prepared for another AI to use for image generation. Do not mention or describe the back side of the product. Focus only on the front view.\n"),
                                         Map.of("type", "image_url", "image_url", Map.of("url", imageUrl))
                                 )
                         )
@@ -117,15 +120,17 @@ public class OpenAIImage {
 //                userPrompt
 //        );
         // 1. 최종 프롬프트 구성 (영문으로 수정)
-        // 1. 최종 프롬프트 구성 (주름/질감 지시 제거, 깔끔한 출력에 집중)
+        // 1. 최종 프롬프트 구성 (고품질 제품 사진 스타일로 수정)
+        // 1. 최종 프롬프트 구성 (최고 품질, 전문 사진관 스타일로 수정)
         String finalPrompt = String.format(
-                "Based on the product described as '%s', " +
-                        "generate a high-quality, " +
-                        "photorealistic image of the product with the design '%s' applied to the front. " +
-                        "The design should be centered and appear as a clean print.",
+                "Generate an ultra-realistic, cinematic product photography of the item described as '%s'. " +
+                        "A design '%s' is applied to the front, perfectly centered as a crisp, flat graphic print with clean edges. " +
+                        "The photo is taken with an 85mm f/1.8 lens, using softbox studio lighting, against a seamless clean white background with subtle, soft shadows. " +
+                        "The product should be the only subject in the image.",
                 imageDescription,
                 userPrompt
         );
+
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

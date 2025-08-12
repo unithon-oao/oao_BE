@@ -21,3 +21,13 @@ ai:
    openai:
      url: https://api.openai.com/v1/images/generations
      api-key: ${OPENAI_API_KEY}
+
+cloud:
+  aws:
+    credentials:
+      access-key: YOUR_AWS_ACCESS_KEY # 이 부분에 실제 키를 입력했는지 확인
+      secret-key: YOUR_AWS_SECRET_KEY # 이 부분에 실제 키를 입력했는지 확인
+    region:
+      static: ap-northeast-2 # 사용 중인 리전 확인
+    s3:
+      bucket: YOUR_S3_BUCKET_NAME # 버킷 이름 확인

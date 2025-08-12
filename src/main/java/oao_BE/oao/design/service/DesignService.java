@@ -1,5 +1,6 @@
 package oao_BE.oao.design.service;
 
+import com.amazonaws.services.s3.AmazonS3;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import oao_BE.oao.design.dto.request.DesignRequestDTO;
@@ -43,6 +44,7 @@ public class DesignService {
     private final AiImageRepository aiImageRepository;
     private final UserRepository userRepository;
     private final ProductService productService;
+    private final S3Service s3Service;
     private final OpenAIImage openAIImage;
     private final OpenAIDescription openAIDescription;
 
@@ -76,6 +78,14 @@ public class DesignService {
                 imageDescription,
                 designRequestDTO.getPrompt()
         );
+        // s3에 저장 추가 //
+        for (DesignResponseDTO.DesignDTO design : designs) {
+            String dallEUrl = design.getAiProductImage();
+            // S3Service를 사용하여 URL을 S3에 저장하는 로직 (예시)
+            String s3Url = s3Service.saveImageFromUrl(dallEUrl);
+            design.setAiProductImage(s3Url); // DTO의 URL을 S3 URL로 변경
+        }
+        //
 
         // 5. 각 이미지에 대한 설명 생성 (OpenAI 텍스트 API 별도 호출)
         for (DesignResponseDTO.DesignDTO design : designs) {
