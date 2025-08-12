@@ -2,6 +2,8 @@ package oao_BE.oao.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import oao_BE.oao.design.dto.request.FinalDesignDTO;
+import oao_BE.oao.design.repository.DesignRepository;
 import oao_BE.oao.domain.AIImage;
 import oao_BE.oao.domain.AIProduct;
 import oao_BE.oao.domain.DesignPost;
@@ -10,6 +12,7 @@ import oao_BE.oao.dto.response.GetDesignPostListResponse;
 import oao_BE.oao.dto.response.GetDesignPostResponse;
 import oao_BE.oao.repository.DesignPostListRepository;
 import oao_BE.oao.repository.DesignPostRepository;
+import oao_BE.oao.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;

@@ -9,13 +9,12 @@ import oao_BE.oao.design.dto.response.AiImageDTO;
 import oao_BE.oao.design.dto.response.DesignResponseDTO;
 import oao_BE.oao.design.repository.AiImageRepository;
 import oao_BE.oao.design.repository.DesignRepository;
-import oao_BE.oao.domain.AIImage;
-import oao_BE.oao.domain.AIProduct;
-import oao_BE.oao.domain.Product;
-import oao_BE.oao.domain.User;
+import oao_BE.oao.domain.*;
 import oao_BE.oao.product.dto.ProductDetailDTO;
+import oao_BE.oao.product.dto.ProductWithPostIdDTO;
 import oao_BE.oao.product.repository.ProductRepository;
 import oao_BE.oao.product.service.ProductService;
+import oao_BE.oao.repository.DesignPostRepository;
 import oao_BE.oao.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -47,6 +46,7 @@ public class DesignService {
     private final S3Service s3Service;
     private final OpenAIImage openAIImage;
     private final OpenAIDescription openAIDescription;
+    private final DesignPostRepository designPostRepository;
 
 
     @Value("${ai.openai.api-key}")
@@ -257,7 +257,7 @@ public class DesignService {
 
     // 초안 저장
     @Transactional
-    public ProductDetailDTO saveDesign(FinalDesignDTO dto) {
+    public ProductWithPostIdDTO saveDesign(FinalDesignDTO dto) {
         AIProduct aiProduct = designRepository.findById(dto.getAiProductId())
                 .orElseThrow(() -> new RuntimeException("AIProduct not found"));
 
@@ -268,8 +268,36 @@ public class DesignService {
         aiProduct.setAiProductName(dto.getAiProductName());
 
         designRepository.save(aiProduct);
-        return productDetailDTO;
+
+        // AIProduct에 연결된 AIImage 중 선택된 이미지를 가져옴
+        //    (실제 로직은 선택된 이미지를 찾는 로직으로 변경 필요)
+        AIImage selectedAiImage = aiProduct.getImages().stream()
+                .filter(AIImage::getIsSelected)
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Selected AIImage not found"));
+
+        User user = aiProduct.getUser();
+
+        DesignPost newPost = DesignPost.builder()
+                .aiProduct(aiProduct)
+                .aiImage(selectedAiImage)
+                .user(user)
+                .build();
+
+        designPostRepository.save(newPost);
+
+        // ProductDetailDTO와 postId를 담아 응답 DTO를 생성
+        return ProductWithPostIdDTO.builder()
+                .postId(newPost.getDesignPostId())
+                .productId(productDetailDTO.getProductId())
+                .productName(productDetailDTO.getProductName())
+                .brand(productDetailDTO.getBrand())
+                .productImage(productDetailDTO.getImageUrl()) // imageUrl -> productImage로 변경
+                .productCategory(productDetailDTO.getProductCategory())
+                .build();
+
     }
+
 
 
 }
