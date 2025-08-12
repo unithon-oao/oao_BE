@@ -3,18 +3,14 @@ package oao_BE.oao.design.service;
 import lombok.RequiredArgsConstructor;
 import oao_BE.oao.design.dto.response.DesignResponseDTO;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -87,7 +83,7 @@ public class OpenAIImage {
                         Map.of(
                                 "role", "user",
                                 "content", List.of(
-                                        Map.of("type", "text", "text", "이 사진에 있는 주요 상품에 대해 자세히 설명해줘. 상품의 종류, 색상, 형태, 질감, 그리고 배경을 중심으로 묘사해줘."),
+                                        Map.of("type", "text", "text", "Describe the main product in this image in detail. Focus on the product's type, color, shape, and overall texture. Also, describe the background and the lighting of the image. The description should be objective and concise, without adding any creative or subjective elements."),
                                         Map.of("type", "image_url", "image_url", Map.of("url", imageUrl))
                                 )
                         )
@@ -115,8 +111,18 @@ public class OpenAIImage {
     // 2. 이미지 설명과 사용자 프롬프트를 결합해 DALL-E 3로 이미지를 생성하는 메서드
     public List<DesignResponseDTO.DesignDTO> generateImagesWithDescription(String imageDescription, String userPrompt) {
         // 1. 최종 프롬프트 구성 (이 부분은 반복문 밖에서 한 번만 하면 됩니다.)
+//        String finalPrompt = String.format(
+//                "%s. 그리고 이 상품에 '%s' 디자인을 적용해줘. 디자인이 상품의 질감을 따르도록 해.",
+//                imageDescription,
+//                userPrompt
+//        );
+        // 1. 최종 프롬프트 구성 (영문으로 수정)
+        // 1. 최종 프롬프트 구성 (주름/질감 지시 제거, 깔끔한 출력에 집중)
         String finalPrompt = String.format(
-                "%s. 그리고 이 상품에 '%s' 디자인을 적용해줘. 디자인이 상품의 질감을 따르도록 해.",
+                "Based on the product described as '%s', " +
+                        "generate a high-quality, " +
+                        "photorealistic image of the product with the design '%s' applied to the front. " +
+                        "The design should be centered and appear as a clean print.",
                 imageDescription,
                 userPrompt
         );
@@ -177,7 +183,8 @@ public class OpenAIImage {
         String finalPrompt = String.format(
                 "Generate a photorealistic image that exclusively shows the back view of the product. " +
                         "The product's front side is described as: '%s'. " +
-                        "The back design should be simple, complementary to the front, and consistent in style and background with the original product.",
+                        "The back design should be simple, complementary to the front, and consistent in style and background with the original product. " +
+                        "The background must be clean and solid, without any other objects or distracting elements. Focus entirely on the product itself.",
                 frontImageDescription
         );
 

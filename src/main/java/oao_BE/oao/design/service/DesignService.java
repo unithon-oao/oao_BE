@@ -253,6 +253,7 @@ public class DesignService {
 
 
 
+    // 초안 저장
     @Transactional
     public ProductDetailDTO saveDesign(FinalDesignDTO dto) {
         AIProduct aiProduct = designRepository.findById(dto.getAiProductId())
@@ -261,6 +262,8 @@ public class DesignService {
         ProductDetailDTO productDetailDTO = productService.productDetail(aiProduct.getProduct().getProductId());
         aiProduct.setRequest(dto.getRequest());
         aiProduct.setRequestPrice(String.valueOf(dto.getRequestPrice()));
+        aiProduct.setStory(dto.getStory());
+        aiProduct.setAiProductName(dto.getAiProductName());
 
         designRepository.save(aiProduct);
         return productDetailDTO;

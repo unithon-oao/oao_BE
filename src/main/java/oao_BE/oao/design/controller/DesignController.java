@@ -63,10 +63,9 @@ public class DesignController {
         return ResponseEntity.ok(aiImageDTO);
     }
 
+    // TODO.
     // 선택된 이미지 직접 수정
-    // 1. 텍스트 추가 수정
-    // 2. 이미지 업로드 수정
-    // 3. 직접 그리기 수정
+    // 1. 텍스트 추가 수정 2. 이미지 업로드 수정 3. 직접 그리기 수정
     @PostMapping("/edit/{aiProductId}")
     @Transactional
     public ResponseEntity<?> updateEditedImage(
